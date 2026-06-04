@@ -17,4 +17,4 @@ edit `main.cpp` — that is where the scene is configured.
 
 -Mariam Mohsen
 -Mina John
-_Farah Ehab
+-Farah Ehab
