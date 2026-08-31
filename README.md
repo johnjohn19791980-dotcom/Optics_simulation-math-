@@ -18,250 +18,90 @@ edit `main.cpp` — that is where the scene is configured.
 -Mariam Mohsen
 -Mina John
 -Farah Ehab
-# Optics_math
+# C++ 3D Vector & Ray Optics Engine
 
-A mathematical foundation for optical ray-tracing and simulation, developed as a fork of the original `svgOptics_simulation` project.
+A header-only C++ foundation library for 3D vector algebra, optical surface interactions, material properties, and ray tracing primitives. 
 
-## Overview
-
-This repository focuses on the **mathematical backbone of the optical simulation**.
-
-My contribution is primarily contained in `math.h`, where I implemented the core mathematical and geometric structures required for the simulation to represent rays, perform vector calculations, model optical interactions, and handle materials.
-
-The goal was to provide a reusable mathematical layer that allows the higher-level simulation components to operate on a consistent geometric and optical foundation.
+The library provides coordinate-free 3D vector operations, exact boundary hit tracking, and physical surface reflections/refractions driven by geometric optics.
 
 ---
 
-## My Contribution
+## Technical Features
 
-I focused on building the mathematical infrastructure underlying the simulation rather than the graphical representation.
-
-The main components implemented in `math.h` are:
-
-### 1. `Vector3D`
-
-A three-dimensional vector class providing the fundamental operations required for geometric and optical calculations.
-
-Implemented operations include:
-
-* Vector addition and subtraction
-* Scalar multiplication and division
-* Negation
-* Dot product
-* Cross product
-* Vector magnitude
-* Vector normalization
-* Stream output for debugging and visualization
-
-These operations form the basis for representing positions, directions, surface normals, and other geometric quantities.
+* **3D Vector Mathematics (`Vector3D`)**: Vector space operations, Euclidean norm calculations, normalized unit vectors, dot products ($\mathbf{u} \cdot \mathbf{v}$), and cross products ($\mathbf{u} \times \mathbf{v}$).
+* **Parametric Ray Model (`Ray`)**: Parameterized directed ray formulation $\mathbf{r}(t) = \mathbf{o} + t\,\hat{\mathbf{d}}$ with unit direction enforcement.
+* **Vectorial Optical Physics (`OpticsMath`)**:
+  * Exact specular reflection vector derivation.
+  * Vectorial Snell's law refraction with total internal reflection (TIR) detection.
+  * Angular measurements and degree-radian conversions.
+* **Material Property Database (`Material`)**: Physical refractive index ($n$) lookup across dielectric, biological, and semiconductor media (e.g., Silicon $n = 3.48$, Germanium $n = 4.05$, Crown Glass $n = 1.52$).
+* **Boundary Tracking (`HitRecord`)**: Surface intersection record storing parametric distance $t$, interface normals, front-face orientation, and adjacent media properties ($n_1 \to n_2$).
 
 ---
 
-### 2. `Ray`
+## Mathematical Formulation
 
-A ray representation based on an origin and normalized direction.
+### 1. Vector Specular Reflection
+Given an incident unit direction vector $\hat{\mathbf{d}}$ and a surface unit normal $\hat{\mathbf{n}}$ pointing outward:
 
-The class provides:
+$$\mathbf{r}_{\text{refl}} = \hat{\mathbf{d}} - 2(\hat{\mathbf{d}} \cdot \hat{\mathbf{n}})\hat{\mathbf{n}}$$
 
-* Ray origin
-* Ray direction
-* Automatic direction normalization
-* Position evaluation along the ray
+### 2. Vectorial Snell's Law & Refraction
+Let $\eta = \frac{n_1}{n_2}$ be the ratio of refractive indices, and $\cos\theta_1 = -\hat{\mathbf{d}} \cdot \hat{\mathbf{n}}$.
 
-A point along a ray is represented mathematically as:
+The refracted vector is split into perpendicular ($\mathbf{r}_{\perp}$) and parallel ($\mathbf{r}_{\parallel}$) components relative to $\hat{\mathbf{n}}$:
 
-$$
-\mathbf{P}(t)=\mathbf{O}+t\mathbf{D}
-$$
+$$\mathbf{r}_{\perp} = \eta \left( \hat{\mathbf{d}} + \cos\theta_1 \hat{\mathbf{n}} \right)$$
 
-where:
+$$\mathbf{r}_{\parallel} = -\sqrt{1 - |\mathbf{r}_{\perp}|^2} \; \hat{\mathbf{n}}$$
 
-* \(\mathbf{O}\) is the ray origin
-* \(\mathbf{D}\) is the normalized direction
-* \(t\) determines the position along the ray
+$$\mathbf{r}_{\text{refr}} = \mathbf{r}_{\perp} + \mathbf{r}_{\parallel}$$
 
-This provides the fundamental geometric representation used by the optical simulation.
+* **Total Internal Reflection (TIR):** Occurs when the discriminant $1 - |\mathbf{r}_{\perp}|^2 < 0$. In this case, `OpticsMath::refract` returns the zero vector $\mathbf{0}$.
 
 ---
 
-### 3. `OpticsMath`
+## Core API Reference
 
-A collection of mathematical operations specifically required for optical interactions.
-
-#### Reflection
-
-The reflection direction is calculated using:
-
-$$
-\mathbf{R}
-=
-\mathbf{I}
--
-2(\mathbf{I}\cdot\mathbf{N})\mathbf{N}
-$$
-
-where \(\mathbf{I}\) is the incident direction and \(\mathbf{N}\) is the surface normal.
-
-#### Refraction
-
-The refraction calculation uses the refractive-index ratio between two media and computes the transmitted direction using the vector form of Snell's law.
-
-The implementation also checks the refraction discriminant and handles the case where no transmitted ray exists.
-
-#### Angle Calculations
-
-The mathematical angle between two vectors is calculated from their normalized dot product:
-
-$$
-\theta =
-\cos^{-1}
-\left(
-\frac{\mathbf{a}\cdot\mathbf{b}}
-{|\mathbf{a}||\mathbf{b}|}
-\right)
-$$
-
-The module also provides degree/radian conversion utilities.
+| Component | Class / Namespace | Description |
+| :--- | :--- | :--- |
+| **Vector3D** | `class Vector3D` | 3D vector class supporting $+$, $-$, $*$, $/$, `dot()`, `cross()`, `length()`, and `normalized()`. |
+| **Ray** | `class Ray` | Ray class defined by origin $\mathbf{o}$ and normalized direction $\hat{\mathbf{d}}$. Evaluates $\mathbf{r}(t)$ via `at(t)`. |
+| **OpticsMath** | `namespace OpticsMath` | Mathematical functions: `reflect()`, `refract()`, `angleBetween()`, `degToRad()`, `radToDeg()`. |
+| **Material** | `class Material` | Refractive index table lookup ($n$) and material property management. |
+| **HitRecord** | `struct HitRecord` | Surface hit point, parametric distance $t$, oriented normal vector, and interface media ($n_1$, $n_2$). |
 
 ---
 
-### 4. `Material`
+## Usage Example
 
-A material representation containing:
+```cpp
+#include <iostream>
+#include "OpticsEngine.hpp"
 
-* Material name
-* Refractive index
-* Optical color
+int main() {
+    // Media definition
+    Material air("Air");
+    Material silicon("Silicon"); // n = 3.480
 
-I also implemented a built-in refractive-index table containing several optical and biological materials, including:
+    // Incident ray setup
+    Vector3D rayOrigin(0.0, 1.0, -2.0);
+    Vector3D rayDir(0.0, -1.0, 1.0);
+    Ray incidentRay(rayOrigin, rayDir);
 
-* Vacuum
-* Air
-* Ice
-* Water
-* Ethyl Alcohol
-* Fused Quartz
-* Acrylic
-* Crown Glass
-* Flint Glass
-* Diamond
-* Silicon
-* Germanium
-* Cornea
-* Blood
-* Vitreous Humour
+    // Surface interface normal (pointing out of the silicon surface)
+    Vector3D normal(0.0, 1.0, 0.0);
 
-The refractive index is used by the optical calculations to determine how a ray behaves when transitioning between different media.
+    // Compute Refraction (Air -> Silicon interface)
+    Vector3D refractedDir = OpticsMath::refract(
+        incidentRay.direction(),
+        normal,
+        air.refractiveindex,
+        silicon.refractiveindex
+    );
 
----
+    std::cout << "Incident Direction:  " << incidentRay.direction() << "\n";
+    std::cout << "Refracted Direction: " << refractedDir << "\n";
 
-### 5. `HitRecord`
-
-`HitRecord` stores the mathematical information associated with a ray-surface interaction.
-
-It contains:
-
-* Intersection parameter \(t\)
-* Intersection point
-* Surface normal
-* Front/back-face information
-* Material information on the two sides of the interface
-
-The `setFaceNormal()` function determines whether the ray is hitting the front or back side of a surface and ensures that the working normal is oriented consistently relative to the incoming ray.
-
----
-
-## Mathematical Architecture
-
-The mathematical layer can be viewed as a pipeline:
-
-```text
-Vector3D
-   │
-   ├── Geometry
-   │
-   └── Directions / Normals
-           │
-           ▼
-         Ray
-           │
-           ▼
-   Surface Intersection
-           │
-           ▼
-      HitRecord
-           │
-           ├── Surface Normal
-           └── Materials
-                    │
-                    ▼
-             Optical Interaction
-              ┌─────┴─────┐
-              ▼           ▼
-          Reflection   Refraction
-```
-
-This structure separates the mathematical representation of the optical system from the higher-level simulation and visualization logic.
-
----
-
-## Design Focus
-
-The main focus of this contribution was to translate the mathematical requirements of ray-based optical simulation into computational structures that can be directly used by the rest of the project.
-
-The implementation therefore combines:
-
-* 3D vector algebra
-* Euclidean geometry
-* Ray parametrization
-* Surface-normal calculations
-* Reflection geometry
-* Vector-form Snell's law
-* Refractive-index modeling
-* Coordinate and angle calculations
-* Ray-surface interaction data structures
-
----
-
-## File
-
-The primary implementation is contained in:
-
-```text
-math.h
-```
-
-This header provides the mathematical and optical primitives required by the simulation.
-
----
-
-## Relationship to the Original Project
-
-This repository is a fork of the original `svgOptics_simulation` project.
-
-The upstream project provides the broader optical simulation framework, while this fork documents and develops my contribution to its **mathematical foundation**.
-
-The original project should be credited for the overall framework and project concept.
-
----
-
-## Future Development
-
-Potential extensions to the mathematical layer include:
-
-* More comprehensive material databases
-* Wavelength-dependent refractive indices
-* Fresnel reflection/transmission calculations
-* Total internal reflection handling with explicit optical-state representation
-* More advanced geometric primitives
-* Matrix and transformation utilities
-* Additional numerical and computational geometry tools
-
----
-
-## Author
-
-**Mina John**
-
-Undergraduate Nano Engineering student interested in computational physics, photonics, and quantum engineering.
-
+    return 0;
+}
