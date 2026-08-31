@@ -105,3 +105,6 @@ int main() {
 
     return 0;
 }
+
+Future Roadmap & Physics Extensions1. Inhomogeneous Media & Variable Refractive Index $n(\mathbf{r})$GRIN Optics Simulation: Extend the ray tracer to inhomogeneous media where $n = n(x, y, z)$.Eikonal Equation Solver: Numerically integrate ray trajectories through continuous refractive index gradients using the differential ray equation:$$\frac{d}{ds} \left( n(\mathbf{r}) \frac{d\mathbf{r}}{ds} \right) = \nabla n(\mathbf{r})$$2. Full Wave Optics & ElectromagneticsFresnel Equations & Polarization: Compute power reflection ($R$) and transmission ($T$) coefficients for $s$- and $p$-polarized light fields.Phase Tracking: Accumulate optical path length (OPL) $\int n(\mathbf{r}) \, ds$ along rays to model interference and phase retardation.3. Integrated Photonics & Neuromorphic Optical ComputingWaveguide Optics & Mode Propagation: Extend geometric ray modeling toward waveguided structures (e.g., Silicon-on-Insulator ($\text{SOI}$) strip waveguides).Photonic Brain-on-a-Chip Architecture: Model integrated photonic mesh networks (such as arrays of Mach-Zehnder Interferometers or micro-ring resonators) to simulate optical neural networks ($\text{ONNs}$) and neuromorphic hardware implementations.
+
